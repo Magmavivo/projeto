@@ -1,0 +1,123 @@
+def erro_login(senha,chave):
+    while senha!= chave:
+        print('A chave de acesso não está correta, digite novamente!')
+        senha = input()
+    #Quando senha estiver correta, permitir acesso
+    menu_principal()
+estoque = {'111000': [['arroz','14 11 2019',7],['arroz','14 11 2020',8],['arroz','14 11 2021',9]],'111001':[['feijão', '22 02 2021', 10]]}
+
+def adicionar_item():
+    nome = input('digite o nome do produto:')
+    quant = int(input('Quantide:'))
+    print('Responda as seguintes perguntar com '"S"' para sim e '"N"' para não')
+    cod1 = input('É perecível?').upper()
+    if cod1 =='S':
+        data = input('data de validade:(aaaa-mm-dd)')
+    cod2 = input('É frágil?').upper()
+    print('Digite 1 para NATURAL e 2 para GELADO.')
+    cod3 = input('Climatação:')
+    #FUNÇÃO GERA CÓDIDO E ADICONA NO DICIONÁRIO
+    gerar_codigo(cod1,cod2,cod3,nome,data,quant)
+
+def gerar_codigo(cod1,cod2,cod3,nome,data,quant):
+    cod = ''
+    if cod1 =='S':
+        cod += '1'
+    else:
+        cod += '0'
+    if cod2=='S':
+        cod+='1'
+    else:
+        cod += '0'
+    if cod3 =='1':
+        cod+='1'
+    else:
+        cod += '0'
+    cod += '000'
+    #Verificar se o código já existe e acrescentar 1 para adicionar no estoque
+    if cod in estoque:
+      ultimo = int(cod[-1])
+      sem_ultimo = cod[:-1]
+      novo_ultimo = str(ultimo+1)
+      cod = sem_ultimo + novo_ultimo
+ 
+      estoque[cod].append([nome,data,quant])
+     else:
+        estoque[cod] = [ ]
+       estoque[cod].append([nome,data,quant])
+
+def add_prod_existente():
+    add_produto = input('Digite o código do produto:')
+    if add_produto in estoque:
+        quant = int(input('Digite a quantidade a ser adicionada:'))
+        validade = input('data de validade:(aaaa-mm-dd)')
+        nome = estoque[add_produto][0]
+        estoque[add_produto] += [nome,validade,quant]
+    else:
+        print('O código não exite no estoque, digite um código existente')
+        add_prod_existente()
+
+def vizualizar():
+    print(10*'-','ESTOQUE AUTAL',10*'-')
+    print('CÓDIGO','%6s'%'NOME','%12s'%'VALIDADE' ,'%7s'%'QUANT')
+    for i in sorted(estoque):
+        if len(estoque[i]) >1:
+            for k in estoque[i]:
+                print(i,'|',k[0],'|',k[1],'|', k[2])
+        else:
+            print(i,'|',k[0],'|',k[1],'|', k[2])
+
+def quinzena():
+    from datetime import date
+    hoje = date.today()
+    hoje.toordinal()
+    futuro = str(date.fromordinal(hoje.toordinal()+15))
+    print(10*'-','PRODUTOS QUE IRÃO VENCER NOS PRÓXIMOS 15 DIAS',10*'-')
+    print('CÓDIGO','%6s'%'NOME','%12s'%'VALIDADE' ,'%7s'%'QUANT')
+    for i in estoque:
+        if len(estoque[i])>1:
+            for k in estoque[i]:
+                ano = k[1][0:4]
+                mes = k[1][5:7]
+                dia = k[1][-2:]
+                #comparando
+                if futuro[0:4] == ano:
+                    if mes < futuro[5:7]:
+                        print(i,'|',k[0],'|',k[1],'|', k[2])
+                    elif mes == futuro[5:7]:
+                        if dia < futuro[-2:]:
+                            print(i,'|',k[0],'|',k[1],'|', k[2])
+        else:
+            data = estoque[i][0][1]
+            ano = data[0:4]
+            mes = data[5:7]
+            dia = data[-2:]
+            #comparando
+            if futuro[0:4] == ano:
+                if mes < futuro[5:7]:
+                    print(i,'|',estoque[i][0][0],'|',estoque[i][0][1],'|', estoque[i][0][2])
+                elif mes == futuro[5:7]:
+                    if dia < futuro[-2:]:
+                        print(i,'|',estoque[i][0][0],'|',estoque[i][0][1],'|', estoque[i][0][2])
+
+def pos_vendas():
+    cod = input('digite o código do produto que deseja atualizar no estoque:')
+    if cod in estoque:
+        quant = int(input('Digite a quantidade a ser removida:'))
+        if len(estoque[cod]) >1:
+            menor_data = estoque[cod][0][1]
+            for k in estoque[cod]:
+                #menor data
+                if k[1][0:4] <= menor_data[0:4]:
+                    if k[1][5:7] < menor_data[5:7]:
+                        menor_data = k[1]
+                    elif k[1][5:7] == menor_data[5:7]:
+                        if k[1][-2:] < menor_data[-2:]:
+                            menor_data = k[1]
+            for k in estoque[cod]:
+                if k[1] == menor_data:
+                    quant_atual = k[2] - quant
+                    k[2] = quant_atual
+        else:
+            quant_atual = estoque[cod][0][2] - quant
+            estoque[cod][0][2] = quant_atual
